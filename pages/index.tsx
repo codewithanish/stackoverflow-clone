@@ -1,86 +1,115 @@
-import type { NextPage } from 'next'
-import Head from 'next/head'
-import Image from 'next/image'
+import { EyeIcon, SearchIcon } from "@heroicons/react/solid";
+import type { NextPage } from "next";
+import Head from "next/head";
+import Header from "../components/Header";
+import Sidebar from "../components/Sidebar";
+import { Post } from "../typings";
+import { sanityClient, urlFor } from "../sanity";
+import TimeAgo from "react-timeago";
+import Link from "next/link";
+import PostItem from "../components/PostItem";
 
-const Home: NextPage = () => {
-  return (
-    <div className="flex min-h-screen flex-col items-center justify-center py-2">
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className="flex w-full flex-1 flex-col items-center justify-center px-20 text-center">
-        <h1 className="text-6xl font-bold">
-          Welcome to{' '}
-          <a className="text-blue-600" href="https://nextjs.org">
-            Next.js!
-          </a>
-        </h1>
-
-        <p className="mt-3 text-2xl">
-          Get started by editing{' '}
-          <code className="rounded-md bg-gray-100 p-3 font-mono text-lg">
-            pages/index.tsx
-          </code>
-        </p>
-
-        <div className="mt-6 flex max-w-4xl flex-wrap items-center justify-around sm:w-full">
-          <a
-            href="https://nextjs.org/docs"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Documentation &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Find in-depth information about Next.js features and its API.
-            </p>
-          </a>
-
-          <a
-            href="https://nextjs.org/learn"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Learn &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Learn about Next.js in an interactive course with quizzes!
-            </p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Examples &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Discover and deploy boilerplate example Next.js projects.
-            </p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className="mt-6 w-96 rounded-xl border p-6 text-left hover:text-blue-600 focus:text-blue-600"
-          >
-            <h3 className="text-2xl font-bold">Deploy &rarr;</h3>
-            <p className="mt-4 text-xl">
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className="flex h-24 w-full items-center justify-center border-t">
-        <a
-          className="flex items-center justify-center gap-2"
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-        </a>
-      </footer>
-    </div>
-  )
+interface Props {
+  posts: [Post];
 }
 
-export default Home
+const Home: NextPage<Props> = ({ posts }: Props) => {
+  console.log(posts);
+  return (
+    <div className="bg-zinc-800 min-h-screen">
+      <Head>
+        <title>
+          Stack Overflow - Where Developers Learn, Share, & Build Careers
+        </title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+      <Header />
+      <div className="max-w-7xl mx-auto flex">
+        <Sidebar />
+
+        <main className="w-full space-y-5">
+          <div className="flex flex-col space-y-6 p-2 m-3">
+            <div className="justify-between flex mx-2 items-center">
+              <h1 className="text-gray-300 text-2xl">Top Questions</h1>
+              <button className="px-2 py-[0.4rem] bg-sky-500 rounded text-white text-sm">
+                Ask Question
+              </button>
+            </div>
+            <div className="flex space-x-4 border border-gray-500 rounded justify-center self-end text-gray-400 p-2 items-center text-sm">
+              <h3 className="text-gray-300 bg-gray-500 bg-opacity-50 p-1">
+                Interesting
+              </h3>
+              <h3>Bountied</h3>
+              <h3>Hot</h3>
+              <h3>Week</h3>
+              <h3>Month</h3>
+            </div>
+          </div>
+          {posts.map((post) => (
+            <PostItem key={post._id} post={post} />
+          ))}
+        </main>
+
+        <div className="hidden lg:block mx-auto space-y-4 mt-4">
+          <div className="border border-gray-600 rounded-sm shadow-lg w-64">
+            <h3 className="bg-zinc-700/40 text-gray-300 p-3">Custom Filters</h3>
+            <div className="flex-col mx-auto space-y-6 mt-4 hidden md:flex">
+              <p className="text-blue-500 text-sm p-3">
+                Create a custom filter
+              </p>
+            </div>
+          </div>
+          <div className="border border-gray-600 rounded-sm shadow-lg w-64">
+            <h3 className="bg-zinc-700/40 text-gray-300 p-3">Watched Tags</h3>
+            <div className="flex items-center flex-col p-3 space-y-3">
+              <SearchIcon className="h-20 text-blue-400" />
+              <p className="text-gray-500 text-sm text-center">
+                Watch tags to curate your list of questions.
+              </p>
+              <button className="px-2 py-2 bg-[#9cc1db]/20 border border-[#9cc1db] rounded-md text-[#9cc1db] text-sm flex items-center">
+                <EyeIcon className="h-4 w-4 mr-1" />
+                Watch a tag
+              </button>
+            </div>
+          </div>
+          <div className="border border-gray-600 rounded-sm shadow-lg w-64">
+            <h3 className="bg-zinc-700/40 text-gray-300 p-3">Ignored Tags</h3>
+            <div className="flex items-center flex-col p-3 space-y-3">
+              <button className="px-2 py-2 bg-[#9cc1db]/20 border border-[#9cc1db] rounded-md text-[#9cc1db] text-sm">
+                Add an ignored tag
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Home;
+
+export const getStaticProps = async () => {
+  const query = `*[_type == "post"]{
+  _id,
+  _createdAt,
+  title,
+  views,
+  upvotes,
+  downvotes,
+  slug,
+  author-> {
+    name,
+    image
+  },
+  answers
+}`;
+
+  const posts = await sanityClient.fetch(query);
+
+  return {
+    props: {
+      posts,
+    },
+    revalidate: 10,
+  };
+};
